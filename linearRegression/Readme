@@ -1,0 +1,2 @@
+Execution steps:
+python linearRegression.py ../dataSets/abalone/rings/Prototask.data/data
