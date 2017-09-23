@@ -2,4 +2,4 @@ Execution steps:
 python linearRegression.py ../dataSets/abalone/rings/Prototask.data/data
 
 Docker execution steps for TF program: 
-nvidia-docker run -it  -v '/home/sunny/Class Work/CAP5610-ML/MachineLearning/linearRegression':/code sunnyraj10411/cap5610 bash
+nvidia-docker run -it  -v /home/sunny/MachineLearning/MachineLearning:/code gcr.io/tensorflow/tensorflow:latest-gpu bash
