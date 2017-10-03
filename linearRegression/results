@@ -1,0 +1,25 @@
+
+Our algorithm implementation: 
+('Deviation:', matrix([[ 3.1871763]]))
+('Deviation:', matrix([[ 1.83043875]]))
+('Deviation:', matrix([[ 2.52916343]]))
+('Deviation:', matrix([[ 2.00592093]]))
+('Deviation:', matrix([[ 2.0605038]]))
+real	0m0.783s
+user	0m0.976s
+sys	0m2.860s
+
+
+
+Tensorflow implementation results:
+('Accuracy:', array([ 6.86239052], dtype=float32))
+('Accuracy:', array([ 3.00601029], dtype=float32))
+('Accuracy:', array([ 4.2897954], dtype=float32))
+('Accuracy:', array([ 3.66848159], dtype=float32))
+('Accuracy:', array([ 3.6187892], dtype=float32))
+real	0m17.924s
+user	0m18.348s
+sys	0m1.852s
+
+
+Somehow our results are better !!

@@ -179,8 +179,8 @@ class LinearRegression():
 
         self.WML = np.dot(npTQxQInvxnpTQ,self.npT)
         print(self.WML)
-        self.WML  = ([ 0 , 8.91404042,  12.22048227,  11.91342775,   8.72210978,
-            -21.56383663, -12.44905461,   6.33154266])
+        #self.WML  = ([ 0 , 8.91404042,  12.22048227,  11.91342775,   8.72210978,
+        #-21.56383663, -12.44905461,   6.33154266])
         self.predict()
 
 if len(sys.argv) != 2:

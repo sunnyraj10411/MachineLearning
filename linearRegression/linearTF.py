@@ -20,7 +20,7 @@ shell_weight = tf.feature_column.numeric_column("shell_weight")
 #rings = tf.feature_column.numeric_column("rings")
 
 base_columns = [sex,length,diameter,height,whole_weight,shucked_weight,viscera_weight,shell_weight]
-
+labels = []
 
 
 
@@ -45,23 +45,24 @@ def input_fn(data_file,num_epochs,shuffle,index,train):
 
     if( train == 1):
         labels = df_train["rings"].astype(float) 
-        print(labels)
+        #print(labels)
         return tf.estimator.inputs.pandas_input_fn(x=df_train,
                 y=labels,
-                batch_size=100,
-                num_epochs=num_epochs,
-                shuffle=shuffle,
-                num_threads=5)
+                shuffle=shuffle)#,
+                #batch_size=100,
+                #num_epochs=num_epochs,
+                #num_threads=5)
 
     else:
+        global labels
         labels = df_test["rings"].astype(float) 
-        print(labels)
+        #print(labels)
         return tf.estimator.inputs.pandas_input_fn(x=df_test,
                 y=labels,
-                batch_size=100,
-                num_epochs=num_epochs,
-                shuffle=shuffle,
-                num_threads=5)
+                shuffle=shuffle)#,
+                #batch_size=100,
+                #num_epochs=num_epochs,
+                #num_threads=5)
 
     #print(df_train)
     #print(df_train)
@@ -83,17 +84,45 @@ def main():
     print("The name of the script is",sys.argv[0])
     model_dir = tempfile.mkdtemp()
     m = build_estimator(model_dir)
-    print("Training started")
-    m.train(input_fn=input_fn(sys.argv[1],num_epochs=None,shuffle=True,index=1,train = 1),
-            steps=None)
-    print("Training done")
-    print("model_director = %s" %model_dir)
-    #print("Training started")
-    #m.train(input_fn=input_fn(sys.argv[1],num_epochs=None,shuffle=True,index=1,train = 0),
-    #        steps=None)
-    
-    #for key in results:
-    #    print("%s: %s" %(key,results[key]))
 
+    for i in range(0,5):
+        print("Training started")
+        #m.train(input_fn=input_fn(sys.argv[1],num_epochs=None,shuffle=True,index=1,train = 1),
+        #        steps=None)
+        m.train(input_fn=input_fn(sys.argv[1],num_epochs=None,shuffle=True,index=i,train=1))
+        print("Training done")
+        print("model_director = %s" %model_dir)
+        #print("Training started")
+        #results = m.evaluate(input_fn=input_fn(sys.argv[1],num_epochs=None,shuffle=True,index=1,train = 0))#,
+        results = list(m.predict(input_fn=input_fn(sys.argv[1],num_epochs=None,shuffle=True,index=i,train = 0)))#,
+        #        steps=None)
+        print("Evaluate done")
+        #print(results)
+
+        #print('Predictions: {}'.format(str(results)))
+    
+        total = 0
+        print("Size predict: ",len(results),"Orig Data:",len(labels))
+        labels1 = labels.as_matrix()
+    
+        resultArr = []
+        #for i in results:
+            #resultArr.append(i['predictions'])
+
+        #print(labels1)
+        for i in range(0,len(results)):
+        #print(resultArr[i],'vs',labels1[i])
+            total += pow(results[i]['predictions'] - labels1[i],2)
+            #print(total)
+    
+    
+        print("Accuracy:",pow(total/len(results),0.5 ) )
+
+        #loss = tf.reduce_sum(tf.squared_difference(results,labels))
+        #print("Loss is :",loss)
+
+        #with tf.Session() as sess:
+            #print(sess.run(results))
+            #print(results.eval())
 
 if __name__ == "__main__":main()
