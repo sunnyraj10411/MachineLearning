@@ -208,9 +208,9 @@ def main():
     for i in range(5):
         a.makePhiT(i)
         W = a.train()
-        if ranD == 3:
-            a.plot()
-            exit()
+        #if ranD == 3:
+        #    a.plot()
+        #    exit()
     #we will plot the data
 
 
