@@ -163,7 +163,7 @@ class linearClassification:
             if printFlag == 1:
                 print(" val ",val, "vs", t[i])
             #print(val)
-        print("Total:",totCount,"Correct:",corCount,"Wrong:",worCount, "Correct precentage:",(corCount*100)/totCount)
+        print("Total:",totCount,"Correct:",corCount,"Wrong:",worCount, "Correct percentage:",(corCount*100)/totCount)
 
     def plot(self):
         x = []

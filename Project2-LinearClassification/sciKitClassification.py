@@ -140,7 +140,7 @@ class sciKitClassification:
                 corCount += 1
             else:
                 worCount += 1
-        print("Total:",totCount,"Correct:",corCount,"Wrong:",worCount, "Correct precentage:",(corCount*100)/totCount)
+        print("Total:",totCount,"Correct:",corCount,"Wrong:",worCount, "Correct percentage:",(corCount*100)/totCount)
 
     def plot(self):
         x = []
