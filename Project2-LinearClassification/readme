@@ -1,0 +1,5 @@
+#for local data
+python linearClassification.py ./rand.dat 2
+
+#for breast cancer data
+python linearClassification.py ../dataSets/breast-cancer-wisconsin/breast-cancer-wisconsin.data 9
