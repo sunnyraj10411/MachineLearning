@@ -1,6 +1,8 @@
 import pandas as pd
 import numpy as np
 import sys
+import matplotlib.pyplot as plt
+import pylab
 
 bcdD = 10
 ranD = 3
@@ -61,9 +63,13 @@ class linearClassification:
         delLen = t.shape[0]%self.tDiv
         #print(delLen)
 
-        phiD = np.delete(phi,[1,2,3],axis=0)
-        tD = np.delete(t,[1,2,3],axis=0)
-
+        if( self.dDim == bcdD): #delete 3 datapoints
+            phiD = np.delete(phi,[1,2,3],axis=0)
+            tD = np.delete(t,[1,2,3],axis=0)
+        else:
+            phiD = phi
+            tD = t
+        
         phiArr = np.vsplit(phiD,5)
         tArr = np.vsplit(tD,5)
         #print(tArr[0])
@@ -73,16 +79,19 @@ class linearClassification:
             self.T = tArr[1]
             self.PhiTest = phiArr[0]
             self.TTest = tArr[0]
+            self.PhiArrS = phiArr[0]
         else:
             self.Phi = phiArr[0]
             self.T = tArr[0]
             self.PhiTest = phiArr[1]
             self.TTest = tArr[1]
+            self.PhiArrS = phiArr[1]
             
         for i in range(2,5):
             if div == i:
                 self.PhiTest = phiArr[i]
                 self.TTest = tArr[i]
+                self.PhiArrS = phiArr[i]
             else:
                 self.Phi = np.concatenate((self.Phi,phiArr[i]))
                 self.T = np.concatenate((self.T,tArr[i]))
@@ -134,7 +143,9 @@ class linearClassification:
         #print(self.W)
         #self.predict(self.W,self.Phi,self.T,0)
         self.predict(self.W,self.PhiTest,self.TTest,0)
-        
+
+        #if randD == 3 then plot graph
+        return self.W
 
     def predict(self,w,phi,t,printFlag):
         totCount = 0
@@ -154,6 +165,39 @@ class linearClassification:
             #print(val)
         print("Total:",totCount,"Correct:",corCount,"Wrong:",worCount, "Correct precentage:",(corCount*100)/totCount)
 
+    def plot(self):
+        x = []
+        y = []
+        x1 = []
+        y1 = []
+        phi = self.PhiArrS
+        w = np.asarray(self.W)
+        print(self.W)
+        print(phi.shape)
+        print(phi[1][1])
+        for i in range(phi.shape[0]):
+            #print(phi[i][1])
+            #print(phi[i][0],phi[i][1])
+            if self.TTest[i] == 1:
+                x.append(phi[i][0])
+                y.append(phi[i][1])
+            else:
+                x1.append(phi[i][0])
+                y1.append(phi[i][1])
+        pylab.plot(x,y,'o')
+        pylab.plot(x1,y1,'o')
+    
+        x3 = np.linspace(-10,120,100)
+        y3 = (-w[0]-w[1]*x3)/w[2]
+        print(x3.shape,y3.shape)
+
+        pylab.plot(x3,y3)
+
+        pylab.axis('equal')
+        pylab.show()
+        pass
+    
+
 
 def main():
 
@@ -163,10 +207,11 @@ def main():
 
     for i in range(5):
         a.makePhiT(i)
-        a.train()
-
-
-     
+        W = a.train()
+        if ranD == 3:
+            a.plot()
+            exit()
+    #we will plot the data
 
 
 
