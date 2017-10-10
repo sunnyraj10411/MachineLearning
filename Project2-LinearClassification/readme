@@ -1,5 +1,8 @@
+[Logistic regression PPT](https://docs.google.com/presentation/d/1Csrsq15QgZ9cLQi0IyZnAw2fimP-TEcky3pqBD3oDk0/edit?usp=sharing)
+
 #for local data
 python linearClassification.py ./rand.dat 2
 
 #for breast cancer data
 python linearClassification.py ../dataSets/breast-cancer-wisconsin/breast-cancer-wisconsin.data 9
+
