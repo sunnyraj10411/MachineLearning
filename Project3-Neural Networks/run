@@ -1,0 +1,1 @@
+nvidia-docker run -it -v '/home/sunny/Class Work/CAP5610-ML/MachineLearning/':/code sunnyraj10411/cap5610 bash
