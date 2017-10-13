@@ -1,4 +1,3 @@
-import tensorflow as tf
 import pandas as pd
 import sys
 import numpy as np
@@ -7,7 +6,6 @@ import tempfile
 irisD = 4
 randD = 3
 
-tf.logging.set_verbosity(tf.logging.INFO)
 flagData = 0
 
 class tensorFlowClassification:
@@ -208,7 +206,8 @@ class tensorFlowClassification:
         for i in range(self.node2.shape[0]):
             self.node2Err[i] = 0
             for j in range(self.finNode.shape[0]):
-                self.node2Err[i] += self.layer2[i][j]*self.finNodeErr[j]  #relu
+                #self.node2Err[i] += self.layer2[i][j]*self.finNodeErr[j]  #relu
+                self.node2Err[i] += self.node2[i]*(1 - self.node2[i])*self.layer2[i][j]*self.finNodeErr[j]
                 if(self.node2[i] == 0):
                     self.node2Err[i] = 0
         #print(self.node2Err,self.layer2,self.finNodeErr)
@@ -237,7 +236,8 @@ class tensorFlowClassification:
             for j in range(x.shape[0]):
                 self.node2[i] += self.layer1[j][i]*x[j]
             self.node2[i] += self.layer1[self.layer1.shape[0]-1][i]*1
-            self.node2[i] = self.relu(self.node2[i])
+            self.node2[i] = self.logit(self.node2[i])
+            #self.node2[i] = self.relu(self.node2[i])
 
         #first layer computation done above start second layer now  
         #print("--layer 2--")
