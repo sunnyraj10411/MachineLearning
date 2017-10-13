@@ -295,7 +295,8 @@ class tensorFlowClassification:
                 self.backwardPass(self.T[j])
             self.applyGradient(0.01)
             #exit()
-            print(i)
+            if i%500 == 0:
+                print(i)
 
 
     def predict(self,x,y):

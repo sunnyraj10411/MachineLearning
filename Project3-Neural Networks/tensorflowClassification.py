@@ -94,7 +94,7 @@ class tensorFlowClassification:
                 num_epochs=None,
                 shuffle=True)
 
-        wineClassifier.train(input_fn=train_input_fn,steps=40000)
+        wineClassifier.train(input_fn=train_input_fn,steps=100000)
         #wineClassifier.train(input_fn=train_input_fn,steps=20000,hooks=[logging_hook])
 
         eval_input_fn = tf.estimator.inputs.numpy_input_fn(
@@ -153,8 +153,10 @@ class tensorFlowClassification:
 
 
         if( self.dDim == wineD): #delete 3 datapoints
-            phiD = np.delete(phi,[1,2,3,4],axis=0)
-            tD = np.delete(t,[1,2,3,4],axis=0)
+            phiD = np.delete(phi,[1,2,3],axis=0)
+            #phiD = np.delete(phi,[1,2,3,4],axis=0)
+            tD = np.delete(t,[1,2,3],axis=0)
+            #tD = np.delete(t,[1,2,3,4],axis=0)
         else:
             phiD = phi
             tD = t

@@ -68,6 +68,7 @@ class tensorFlowClassification:
         if(self.dDim == irisD ): #this is the bcd delete the first row as its identifier
             #self.dataPd = pd.read_csv(self.dataFile,delimiter=';')
             self.dataPd = pd.read_csv(self.dataFile,delimiter=',',names=['0','1','2','3','4'])
+            self.dataPd = self.dataPd.sample(frac=1).reset_index(drop=True)
         else:
             self.dataPd = pd.read_csv(self.dataFile,delimiter=',',names=['0','1','2'])
             global flagData

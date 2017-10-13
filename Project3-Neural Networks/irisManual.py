@@ -10,56 +10,9 @@ randD = 3
 tf.logging.set_verbosity(tf.logging.INFO)
 flagData = 0
 
-def cnn_model_fn(features,labels,mode):
-    """"Model function for detectin wine"""
-    global flagData
-    if flagData == 0:
-        input_layer = tf.reshape(features["x"],[-1,1,4])
-        hidden1 = tf.layers.dense(inputs=input_layer,units=4,activation=tf.nn.relu)
-        #hidden2 = tf.layers.dense(inputs=hidden1,units=4,activation=tf.nn.relu)
-        logits = tf.layers.dense(inputs=hidden1,units=3)
-    else:
-        
-        pass
-
-    predictions = {
-            "classes": tf.argmax(input=logits,axis=2),
-            "probabilities": tf.nn.softmax(logits,name="softmax_tensor")
-            }
-
-    if mode == tf.estimator.ModeKeys.PREDICT:
-        return tf.estimator.EstimatorSpec(mode=mode,predictions=predictions)
-
-    if flagData == 0:
-        depth = 3
-    else:
-        depth = 2
-
-
-    onehot_labels = tf.one_hot(indices=tf.cast(labels,tf.int32),depth=depth)
-    print("logits",logits,"onehot_label",onehot_labels)
-    loss = tf.losses.softmax_cross_entropy(onehot_labels=onehot_labels,logits=logits)
-
-    if mode == tf.estimator.ModeKeys.TRAIN:
-        optimizer = tf.train.GradientDescentOptimizer(learning_rate=0.001)
-        train_op = optimizer.minimize(
-                loss = loss,
-                global_step = tf.train.get_global_step())
-        return tf.estimator.EstimatorSpec(mode=mode,loss=loss,train_op=train_op)
-
-
-    print("labels",labels,"predictions",predictions["classes"])
-    eval_metric_ops = {
-            "accuracy": tf.metrics.accuracy(
-                #labels=labels,predictions=labels)
-                labels=labels,predictions=predictions["classes"])
-            }
-
-    return tf.estimator.EstimatorSpec(mode=mode, loss=loss, eval_metric_ops=eval_metric_ops)
-
-
 class tensorFlowClassification:
     tDiv = 5
+    e = 2.71828
 
     def __init__(self,dataFile,dim):
         self.dataFile = dataFile
@@ -68,6 +21,9 @@ class tensorFlowClassification:
         if(self.dDim == irisD ): #this is the bcd delete the first row as its identifier
             #self.dataPd = pd.read_csv(self.dataFile,delimiter=';')
             self.dataPd = pd.read_csv(self.dataFile,delimiter=',',names=['0','1','2','3','4'])
+            self.dataPd = self.dataPd.sample(frac=1).reset_index(drop=True)
+            #print(self.dataPd)
+            #exit()
         else:
             self.dataPd = pd.read_csv(self.dataFile,delimiter=',',names=['0','1','2'])
             global flagData
@@ -76,43 +32,6 @@ class tensorFlowClassification:
         #self.dataPd = pd.read_csv(self.dataFile,delimiter=',',header=None)
         self.W = np.asmatrix(np.ones(self.dDim)).H
         #self.logit(self.W,self.W) 
-
-    def train(self):
-
-        #tf.device('/gpu:0')
-
-        wineClassifier = tf.estimator.Estimator(model_fn=cnn_model_fn,model_dir='/tmp/')
-        
-        tensors_to_log = {"probabilities":"softmax_tensor"}
-        #logging_hook = tf.train.LoggingTensorHook(tensors = tensors_to_log,every_n_iter=50)
-
-
-        train_input_fn = tf.estimator.inputs.numpy_input_fn(
-                x = {"x":self.Phi},
-                y=self.T,
-                batch_size = 10,
-                num_epochs=None,
-                shuffle=True)
-
-        wineClassifier.train(input_fn=train_input_fn,steps=40000)
-        #wineClassifier.train(input_fn=train_input_fn,steps=20000,hooks=[logging_hook])
-
-        eval_input_fn = tf.estimator.inputs.numpy_input_fn(
-                x={"x": self.PhiTest},
-                y=self.TTest,
-                num_epochs=1,
-                shuffle=False)
-
-        eval_results = wineClassifier.evaluate(input_fn=eval_input_fn)
-        print("Sun result:",eval_results)
-
-        predict = wineClassifier.predict(input_fn=eval_input_fn)
-        #print(predict)
-        #k = 0
-        #for i in predict:
-        #    print (i["classes"],"vs",self.TTest[k])
-        #    k = k+1
-
 
 
     def makePhiT(self,div):
@@ -126,8 +45,8 @@ class tensorFlowClassification:
                 elif t1[i] == 'Iris-versicolor':
                     t[i] = int(1)
                 else:
-                    t1[i] = int(3)
-                print(t[i])
+                    t[i] = int(2)
+                #print(t[i])
             #print(phi)
             #print("shape",t.shape,"phi shape",phi.shape)
             #exit()
@@ -136,33 +55,18 @@ class tensorFlowClassification:
             t = self.dataPd[['2']].as_matrix()
 
         dataLen = t.shape[0]
-        #print(t.shape[0])
-        #divide into 5 parts
-
-        #for i in range(t.shape[0]):
-        #    if t[i] == 2:
-        #        t[i] = 0
-        #    elif t[i] == 4:
-        #        t[i] = 1
-        #    else:
-        #        pass
-
-        #print(t)
-        #exit()
-        #print(phi)
 
         self.blockLen = t.shape[0]/self.tDiv
         delLen = t.shape[0]%self.tDiv
-        print(delLen)
+        #print(delLen)
+
+        #print(t)
+        #exit()
 
         #exit()
 
 
         if( self.dDim == irisD): #delete 3 datapoints
-            #phiD = np.delete(phi,[1,2,3],axis=0)
-            #phiD = np.delete(phi,[1,2,3,4],axis=0)
-            #tD = np.delete(t,[1,2,3],axis=0)
-            #tD = np.delete(t,[1,2,3,4],axis=0)
             phiD = phi
             tD = t
         else:
@@ -201,26 +105,183 @@ class tensorFlowClassification:
         onesTest = np.ones(self.PhiTest.shape[0])
         a_2d = ones.reshape((self.Phi.shape[0],1))
         a_2dTest = onesTest.reshape((self.PhiTest.shape[0],1))
-        #print(a_2d.shape, self.Phi.shape)
-
-        #self.Phi = np.concatenate((a_2d,self.Phi),axis=1)
-        #self.PhiTest = np.concatenate((a_2dTest,self.PhiTest),axis=1)
         print(self.Phi)
 
-        #print(self.Phi)
-        #self.Phi = np.insert(self.Phi,1,999)
-        #print(self.Phi)
 
-        #sunny over here we are doing phi
-        #self.T = np.asmatrix(self.T)
-        #self.Phi= np.asmatrix(self.Phi)
-        #self.PhiTest = np.asmatrix(self.PhiTest)
-        #self.TTest = np.asmatrix(self.TTest)
+    def makeNetwork(self): #we are fixing the network size to 4x4 and 4x3 for iris and 2x2 2x2 for general data
+        if self.dDim == irisD:
+            node1Size = 4
+            finSize = 3
+        else:
+            node1Size = 2
+            finSize = 2
+
         
-        #print(self.PhiTest)
+        self.node1 = np.zeros(node1Size)
 
-        #self.deltaEW(self.W)
+        #self.layer1 = np.random.rand(node1Size+1,node1Size) #+1 is the bias
+        self.layer1 = np.random.uniform(low = -1.0 ,high = 1.0, size=(   node1Size+1,node1Size)) #+1 is the bias
+        self.layer1Delta = np.random.uniform(low = -1.0 ,high = 1.1, size=(   node1Size+1,node1Size)) #+1 is the bias
 
+        self.node2 = np.zeros(node1Size)
+        self.node2Err = np.zeros(node1Size)
+
+        #self.layer2 = np.random.rand(node1Size+1,finSize) #+1 is the bias
+        self.layer2 = np.random.uniform(low=-1.0,high=1.0,size=(node1Size+1,finSize)) #+1 is the bias
+        self.layer2Delta = np.random.uniform(low=-1.0,high=1,size=(node1Size+1,finSize)) #+1 is the bias
+
+        self.finNode = np.zeros(finSize) #one hot encoding
+        self.finNodeErr = np.zeros(finSize) #one hot encoding
+
+        print(self.layer1.shape,self.node2.shape,self.layer2.shape,self.finNode.shape)
+
+    def tanh(self,a):
+        n = np.power(self.e,a) - np.power(self.e,-a)
+        d = np.power(self.e,a) + np.power(self.e,-a)
+        r = n/d
+        return r
+   
+    def logit(self,a):
+        n = 1
+        d = 1 + np.power(self.e,-a)
+        r = n/d
+        return r
+
+    def applyGradient(self,n):
+        self.layer1 = self.layer1 - n*self.layer1Delta
+        self.layer2 = self.layer2 - n*self.layer2Delta
+        #print error
+
+    def backwardPass(self,y):
+        #error at output node
+        tot = 0
+        for i in range (self.finNode.shape[0]):
+            tot += self.finNode[i]
+
+        for i in range(self.finNode.shape[0]):
+            if y == i:
+                t = 1
+                #t = tot
+            else:
+                t = 0
+            self.finNodeErr[i] =  self.finNode[i] - t
+            print("Prob",self.finNode[i],"err",self.finNodeErr[i],y)
+        
+        error = 0
+        for i in range (self.finNodeErr.shape[0]):
+            error = abs(self.finNodeErr[i])
+
+        print("Err:",error)
+        #update layer2 delta
+        for i in range(self.finNode.shape[0]):
+            for j in range(self.node2.shape[0]):
+                self.layer2Delta[j][i] = self.finNodeErr[i]*self.node2[j]
+            #self.layer2Delta[self.layer2Delta.shape[0]-1][i] = self.finNodeErr[i] #updating weight for bias
+
+        print(self.layer2Delta)
+
+        #calculate error at node2
+        for i in range(self.node2.shape[0]):
+            self.node2Err[i] = 0
+            for j in range(self.finNode.shape[0]):
+                #self.node2Err[i] += (1 - self.node2[i]*self.node2[i])*self.layer2[i][j]*self.finNodeErr[j]
+                self.node2Err[i] += self.node2[i]*(1 - self.node2[i])*self.layer2[i][j]*self.finNodeErr[j]
+
+        #calculate layer1 delta
+        for i in range(self.node2.shape[0]):
+            for j in range(self.node1.shape[0]):
+            #for j in range(self.layer1.shape[0]):
+                self.layer1Delta[j][i] = self.node2Err[i]*self.node1[j]
+            #self.layer1Delta[self.layer1Delta.shape[0]-1][i] = self.node2Err[i] #updating weight for bias
+
+
+
+
+    def forwardPass(self,x):
+        #print("randPoint",x)
+        #add the biase term to x
+
+        #print("layer1",self.layer1.shape[0],self.layer1.shape[1])
+        self.node1 = x
+        for i in range(self.node2.shape[0]):
+            self.node2[i] = 0
+            for j in range(x.shape[0]):
+                #print(i,j)
+                self.node2[i] += self.layer1[j][i]*x[j]
+                #print(self.node2[i],self.layer1[j][i],x[j])
+            #add bias
+            #self.node2[i] += self.layer1[self.layer1.shape[0]-1][i]*1
+            self.node2[i] = self.logit(self.node2[i])
+            #print(self.node2[i])
+        #first layer computation done above start second layer now  
+
+        #print("--layer 2--")
+        for i in range(self.finNode.shape[0]):
+            self.finNode[i] = 0
+            for j in range(self.node2.shape[0]):
+                self.finNode[i] += self.layer2[j][i]*self.node2[j]
+            #add bias
+            #self.finNode[i] += self.layer1[self.layer2.shape[0]-1][i]*1
+            #print(self.finNode[i])
+
+        #we will use the softmax function
+        self.softmaxOutput()
+
+        #we have the result in finNode
+
+        #exit()
+
+    def softFun(self,z):
+        return np.power(self.e,z)
+
+    def softmaxOutput(self):
+        sumS = 0
+        for i in range(self.finNode.shape[0]):
+            sumS += self.softFun(self.finNode[i])
+
+        for i in range(self.finNode.shape[0]):
+            self.finNode[i] = self.softFun(self.finNode[i])/sumS
+
+        #print(self.finNode)
+        #exit()
+    
+
+
+    def Predict(self):
+        maxI = 0
+        maxV = -10000
+        for i in range(self.finNode.shape[0]):
+            if maxV < self.finNode[i]:
+                maxV = self.finNode[i]
+                maxI = i
+    
+        print(maxV,self.finNode[0],self.finNode[1],self.finNode[2])
+        return maxI
+
+    def train(self):
+        steps = 200000
+        for i in range(steps):
+            randPoint = np.random.randint(0,high=self.Phi.shape[0])
+            #print randPoint
+            self.forwardPass(self.Phi[randPoint])
+            self.backwardPass(self.T[randPoint])
+            #self.applyGradient(1)
+            self.applyGradient(0.001)
+
+    def predict(self,x,y):
+        corr = 0
+        tot = 0
+        for i in range(x.shape[0]):
+            self.forwardPass(y[i])
+            yOut = self.Predict()
+            print(yOut,"vs",y[i])
+            if yOut == y[i]:
+                corr += 1
+            tot += 1
+
+        print("correct",corr,"tot",tot,"%age",(corr*100)/tot)
+
+    
 
 
 
@@ -234,7 +295,10 @@ def main():
 
     for i in range(5):
         a.makePhiT(i)
+        a.makeNetwork()
         a.train()
+        a.predict(a.Phi,a.T)
+        exit()
     #    W = a.train()
         #if ranD == 3:
         #    a.plot()
