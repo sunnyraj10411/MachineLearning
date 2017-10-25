@@ -137,14 +137,10 @@ class LinearRegression():
         self.predictDiff = np.sqrt(self.predictDiff/y.shape[0])
         print("Deviation:",self.predictDiff)
        
-    def gaussian(self,x,y):
-        #print(x.shape,y.shape)
-        diff = x-y
-        #print(diff.shape)
-        power = np.dot(diff.T,diff)
-        power = -(0.5*power)/self.sig
-        #print("power",power)
-        return(np.power(self.e,power))
+    def polynomial(self,x,y):
+        val = np.dot(x.T,y)
+        val = self.g*val + self.r
+        return(np.power(val,2))
 
     def createK(self,x,y):
         xPhi = np.zeros(x.shape)
@@ -155,21 +151,22 @@ class LinearRegression():
     
         for i in range(x.shape[1]):
             for j in range(y.shape[1]):
-                result[i][j]=self.gaussian(x.T[i],y.T[j])
+                result[i][j]=self.polynomial(x.T[i],y.T[j])
 
         #print(x.T.shape,y.shape)
         #print(result.shape)
         #exit()
         return result
 
-    def runRegression(self,valSet,sigma,lamb):
+    def runRegression(self,valSet,gI,rI,lamb):
         #Read data into validation and test set according to valSet
         print("Div size is:",self.divSize)
         self.npTrainingData.fill(0)
         self.npTrainingResults.fill(0)
         self.npValidationData.fill(0)
         self.npValidationResults.fill(0)
-        self.sig = sigma
+        self.g = gI
+        self.r = rI
 
         for j in range(0,self.dDim):
             index = 0
@@ -227,18 +224,20 @@ a = LinearRegression (dataStore,resultStore)
 
 result = np.zeros([100,100]) #this stores the results of all the experiments
 
-for j in range(1,10):
-    f = j
+for j in range(2,10):
+    r = j
     if j%2 == 0:
-        f = 1/j
-    print (f)
-    for lamb in range(1,5):
-        diff = 0
-        print(f,lamb)
-        for i in range(0,1):
-            diff += a.runRegression(i,f,lamb*50)
-        result[j][lamb] = diff/1.0
-        print(result[j][lamb],'sigma',f,'lamb',lamb)
-        sys.stdout.flush()
+        r = 1/j
+    print (r)
+    for k in range(1,10):
+        for lamb in range(1,2):
+            diff = 0
+            print(r,lamb)
+            for i in range(0,1):
+                diff += a.runRegression(i,r,k,lamb*50)
+            result[j][lamb] = diff/1.0
+            print(result[j][lamb],'j',j,'k',k,'lamb',lamb)
+            sys.stdout.flush()
+        
             
 
