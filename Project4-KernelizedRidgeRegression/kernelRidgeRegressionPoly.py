@@ -206,7 +206,7 @@ class LinearRegression():
         #inv_part = np.linalg.inv(K + I)
         invPartKT = np.dot(invPart, npTrainingResultsMat)
         self.vec_predicted_y = np.dot(kx.T, invPartKT)
-        self.predict(self.vec_predicted_y,self.npTrainingResults)
+        self.predict(self.vec_predicted_y,self.npValidationResults)
         #print (self.vec_predicted_y)
 
         #print self.vec_predicted_y.shape
@@ -224,12 +224,13 @@ a = LinearRegression (dataStore,resultStore)
 
 result = np.zeros([100,100]) #this stores the results of all the experiments
 
-for j in range(2,10):
+for j in range(3,4):
     r = j
     if j%2 == 0:
         r = 1/j
     print (r)
-    for k in range(1,10):
+    for k in range(5,100):
+        k = k*10
         for lamb in range(1,2):
             diff = 0
             print(r,lamb)

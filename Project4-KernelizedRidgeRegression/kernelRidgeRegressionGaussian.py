@@ -142,7 +142,7 @@ class LinearRegression():
         diff = x-y
         #print(diff.shape)
         power = np.dot(diff.T,diff)
-        power = -(0.5*power)/self.sig
+        power = -(0.5*power)/(self.sig*self.sig)
         #print("power",power)
         return(np.power(self.e,power))
 
@@ -209,7 +209,7 @@ class LinearRegression():
         #inv_part = np.linalg.inv(K + I)
         invPartKT = np.dot(invPart, npTrainingResultsMat)
         self.vec_predicted_y = np.dot(kx.T, invPartKT)
-        self.predict(self.vec_predicted_y,self.npTrainingResults)
+        self.predict(self.vec_predicted_y,self.npValidationResults)
         #print (self.vec_predicted_y)
 
         #print self.vec_predicted_y.shape
@@ -227,16 +227,14 @@ a = LinearRegression (dataStore,resultStore)
 
 result = np.zeros([100,100]) #this stores the results of all the experiments
 
-for j in range(1,10):
+for j in range(2,10):
     f = j
-    if j%2 == 0:
-        f = 1/j
     print (f)
-    for lamb in range(1,5):
+    for lamb in range(-10,10):
         diff = 0
         print(f,lamb)
         for i in range(0,1):
-            diff += a.runRegression(i,f,lamb*50)
+            diff += a.runRegression(i,f,lamb)
         result[j][lamb] = diff/1.0
         print(result[j][lamb],'sigma',f,'lamb',lamb)
         sys.stdout.flush()

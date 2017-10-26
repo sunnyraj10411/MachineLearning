@@ -1,5 +1,6 @@
 import numpy as np
 import sys
+import matplotlib.pyplot as plt
 np.set_printoptions(threshold=np.nan)
 
 
@@ -41,11 +42,22 @@ def breakData(lineData):
     dataStore.append(pointData)
     #print("*************")
 
-def read(dataFile):
-    print("In read function file:",dataFile)
-    with open(dataFile,"r") as dataFileO:
-        for line in dataFileO:
-            breakData(line)
+def read():
+    #print("In read function file:",dataFile)
+    #with open(dataFile,"r") as dataFileO:
+    #    for line in dataFileO:
+    #        breakData(line)
+
+    randomNo = np.random.randint(0,1000,size=1000)
+
+    for i in range(1000):
+        pointData = []
+        #randomNo[i] = randomNo[i]/float(500)
+        y = (randomNo[i]-500)*(randomNo[i]-500)
+        pointData.append(float(randomNo[i]))
+        dataStore.append(pointData)
+        resultStore.append(y)
+    
     numData = len(dataStore)
     #print(readData)
     print(numData,len(resultStore))
@@ -59,7 +71,7 @@ class LinearRegression():
     Lambda = 0
     tDiv = 5
     e = 2.71828
-    dDim = 8
+    dDim = 1
 
     #def Q(self,mean,var,x):
         #exp = (x-mean)*(x-mean)
@@ -128,25 +140,53 @@ class LinearRegression():
         self.npT = self.npTrainingResults[:,None]
 
     def predict(self,y,t):
+        #print(y.shape,t.shape)
         self.predictDiff = 0
         calculatedResult = 0.0
+    
+        plt.plot(self.npValidationData.T,y,'ro',markersize=2)
+        plt.plot(self.npValidationData.T,t,'bx',markersize=2)
+        plt.axis([0,1000,0,1000000])
+        plt.show()
+
+
         for i in range(y.shape[0]):
+            print(y[i],'vs',t[i])
             self.predictDiff += np.power(y[i]-t[i],2)
 
         self.predictDiff = np.sqrt(self.predictDiff/y.shape[0])
         print("Deviation:",self.predictDiff)
-        
-    def createK(self,x,y):
-        print(x.T.shape,y.shape)
-        return np.dot(x.T,y) 
+       
+    def polynomial(self,x,y):
+        val = np.dot(x.T,y)
+        val = self.g*val + self.r
+        return(np.power(val,2))
 
-    def runRegression(self,valSet,lamb):
+    def createK(self,x,y):
+        xPhi = np.zeros(x.shape)
+        yPhi = np.zeros(y.shape)
+
+        result = np.zeros([x.shape[1],y.shape[1]])
+        print(result.shape)
+    
+        for i in range(x.shape[1]):
+            for j in range(y.shape[1]):
+                result[i][j]=self.polynomial(x.T[i],y.T[j])
+
+        #print(x.T.shape,y.shape)
+        #print(result.shape)
+        #exit()
+        return result
+
+    def runRegression(self,valSet,gI,rI,lamb):
         #Read data into validation and test set according to valSet
         print("Div size is:",self.divSize)
         self.npTrainingData.fill(0)
         self.npTrainingResults.fill(0)
         self.npValidationData.fill(0)
         self.npValidationResults.fill(0)
+        self.g = gI
+        self.r = rI
 
         for j in range(0,self.dDim):
             index = 0
@@ -167,7 +207,7 @@ class LinearRegression():
 
         #find out the average and variance of different dimensions to calculate mean and
         #variance for gaussian basis
-        self.findMeanAndVariance()
+        #self.findMeanAndVariance()
 
         #calculate matrix
         self.populateNumpyMatrix() 
@@ -179,16 +219,6 @@ class LinearRegression():
         kx = self.createK(self.npTrainingData,self.npValidationData)
         K = self.createK(self.npTrainingData,self.npTrainingData)
         
-        #for i in range(len(self.npTrainingData[0])):
-        #    for j in range(len(self.npTrainingData[0])):
-        #        k_x[i][j] =  linearKernel( self.npTrainingData.T[i], self.npTrainingData.T[j] )
-
-        #K = np.zeros([len(self.npTrainingData[0]),len(self.npTrainingData[0])])
-        #for i in range(len(self.npTrainingData[0])):
-        #    for j in range(len(self.npTrainingData[0])):
-        #        K[i][j] =  linearKernel( self.npTrainingData.T[i] , self.npTrainingData.T[j])
-
-        
         self.Lambda = lamb
 
         I = np.diag(np.ones(K.shape[0]))
@@ -196,24 +226,36 @@ class LinearRegression():
         #inv_part = np.linalg.inv(K + I)
         invPartKT = np.dot(invPart, npTrainingResultsMat)
         self.vec_predicted_y = np.dot(kx.T, invPartKT)
-        
-        print (self.vec_predicted_y)
-
-        #print self.vec_predicted_y.shape
-        #exit()
-
         self.predict(self.vec_predicted_y,self.npValidationResults)
+        #print (self.vec_predicted_y)
+
+        #exit()
+        return self.predictDiff
+
 
 
 if len(sys.argv) != 2:
-    print("Usage: ",sys.argv[0],"dataFile")
-    exit()
+    print("Usage: ",sys.argv[0])
 print("The name of the script is",sys.argv[0])
-read(sys.argv[1])
+read()
 a = LinearRegression (dataStore,resultStore)
 
-for j in range(-10,10):
-    k = j
-    print(k)
-    for i in range(0,1):
-        a.runRegression(i,k)
+result = np.zeros([100,100]) #this stores the results of all the experiments
+
+for j in range(2,10):
+    r = j
+    if j%2 == 0:
+        r = 1/j
+    print (r)
+    for k in range(1,10):
+        for lamb in range(1,2):
+            diff = 0
+            print(r,lamb)
+            for i in range(0,1):
+                diff += a.runRegression(i,r,k,lamb*50)
+            result[j][lamb] = diff/1.0
+            print(result[j][lamb],'j',j,'k',k,'lamb',lamb)
+            sys.stdout.flush()
+        
+            
+
