@@ -34,6 +34,7 @@ class MixtureModelClassification:
 
 
     def makePhiT(self,div):
+        print(self.dDim)
         if(self.dDim == irisD ): #this is the bcd delete the first row as its identifier
             phi = self.dataPd[['0','1','2','3']].as_matrix()
             t1 = self.dataPd[['4']].as_matrix()
@@ -46,7 +47,18 @@ class MixtureModelClassification:
                 else:
                     t[i] = int(2)
         
-        else:        
+        elif self.dDim == 2:        
+            phi = self.dataPd[['0','1']].as_matrix()
+            t1 = self.dataPd[['2']].as_matrix()
+            t = np.ones([phi.shape[0],1])
+            for i in range(len(t)):
+                if t1[i] == 'Iris-setosa':
+                    t[i] = int(0)
+                elif t1[i] == 'Iris-versicolor':
+                    t[i] = int(1)
+                else:
+                    t[i] = int(2)
+        else:
             phi = self.dataPd[['0','1']].as_matrix()
             t = self.dataPd[['2']].as_matrix()
 
@@ -131,9 +143,11 @@ class MixtureModelClassification:
 
     def get_ellipse(self, standardDevia, k):
         eigenvalues, eigenvectors = sp.linalg.eigh(self.covar[k])
+        eigenvalues, eigenvectors = sp.linalg.eigh(self.covar[k])
         angle = np.arctan2(*eigenvectors[:, 0][::-1])
         width, height = standardDevia * np.sqrt(eigenvalues)
         return angle, width, height
+
 
     def calNewMean(self,r):
         mean = np.zeros([self.clusters,self.Phi.shape[1]])
@@ -330,7 +344,7 @@ class MixtureModelClassification:
         self.mean = self.kMean
         self.Nk = np.zeros(self.clusters)
         iterRange = 10000
-        LogLikely = []
+        logLikely = []
 
         for i in range(iterRange):
 
@@ -344,9 +358,9 @@ class MixtureModelClassification:
             self.pik =  self.Nk/self.Phi.shape[0]
 
             #check for convergence 
-            LogLikely.append(self.getLogLikelyhood())
+            logLikely.append(self.getLogLikelyhood())
             if i >= 50:
-                if LogLikely[i] == LogLikely[i-1]:
+                if logLikely[i] == logLikely[i-1]:
                     print('-----------------------------------------------')
                     print("After %d iterations, EM converges" %(i) )
                     print('-----------------------------------------------')
@@ -377,34 +391,36 @@ def main():
     #a.printLabelsK()
     a.mixtureModel()
 
+    if int(sys.argv[2]) == 2: # we will be plotting
 
-    # set the plot params
-    plt.figure(figsize=(10, 3))
-    plt.subplot(1, 1, 1)
-    plt.xlim((1, 7))
-    plt.ylim((-0., 3.))
-    colors = cycle(["black", "green", "purple"])
+        # set the plot params
+        plt.figure(figsize=(6,6))
+        plt.subplot(1, 1, 1)
+        plt.xlim((1, 7))
+        plt.ylim((-0., 2.7))
+        colors = cycle(["black", "green", "purple"])
 
-    for mean, (angle, width, height) in a.getElipse(3):
-        ellipses = Ellipse(xy=mean, width=width, height=height,
+        for mean, (angle, width, height) in a.getElipse(3):
+            ellipses = Ellipse(xy=mean, width=width, height=height,
                       angle=np.degrees(angle))
-        ellipses.set_alpha(0.1)
-        ellipses.set_color(next(colors))
-        plt.gca().add_artist(ellipses)
+            ellipses.set_alpha(0.3)
+            ellipses.set_color(next(colors))
+            plt.gca().add_artist(ellipses)
 
 
-    plt.scatter(a.Phi[:, 0], a.Phi[:, 1])
-    plt.show()
+        #print(a.T)
 
-    #a.train()
-    #a.predict(a.PhiTest,a.TTest)
-    
-    #    W = a.train()
-        #if ranD == 3:
-        #    a.plot()
-        #    exit()
-    #we will plot the data
+        for j in range(3):
+            a0x = []
+            a0y = []
+            for i in range(a.Phi.shape[0]):
+                if a.T[i] == j:
+                    a0x.append(a.Phi[i][0])
+                    a0y.append(a.Phi[i][1])
+                    print(i)
+            plt.scatter(a0x,a0y)
 
+        plt.show()
 
 
 if __name__ == "__main__":main()
