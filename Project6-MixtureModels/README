@@ -1,2 +1,4 @@
 python irisMixtureModel.py iris.data 2 3
 python scikit_gmm.py
+
+[Mixture PPT](https://docs.google.com/presentation/d/1jz6pmzkpOgpboxq4VKnO5sKwBQUExf0ApWHsNm25JgM/edit?usp=sharing)
