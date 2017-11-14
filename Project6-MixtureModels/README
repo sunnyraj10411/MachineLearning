@@ -1,0 +1,2 @@
+python irisMixtureModel.py iris.data 2 3
+python scikit_gmm.py
