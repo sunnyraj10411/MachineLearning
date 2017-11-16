@@ -185,7 +185,7 @@ class MixtureModelClassification:
         return changeFlag
 
 
-    def printLabelsK(self):
+    def printLabelsK(self,idx):
         for i in range(self.labelStore.shape[0]):
             if self.T[i] == 0:
                 label = "iris setosa"
@@ -194,7 +194,7 @@ class MixtureModelClassification:
             else:
                 label = "iris  verginica"
 
-            print(self.labelStore[i][0]," for ",label)
+            print(self.labelStore[i][idx]," for ",label)
 
 
 
@@ -277,12 +277,18 @@ class MixtureModelClassification:
 
         for i in range(self.Phi.shape[0]):
             tot = 0 
+            maximum = 0
+            maxIdx = 0
             for j in range(self.clusters):
                 tot += self.pik[j]*self.gaussian(self.mean[j],self.covar[j],self.Phi[i])
 
             for j in range(self.clusters):
                 gammaZ[i][j] = self.pik[j]*self.gaussian(self.mean[j],self.covar[j],self.Phi[i])/tot
-
+                if(gammaZ[i][j] > maximum):
+                    maximum = gammaZ[i][j]
+                    maxIdx = j
+            
+            self.labelStore[i][1] = maxIdx
         
         #print(gammaZ)
         #exit()
@@ -388,8 +394,8 @@ def main():
     a.makePhiT(1)
     a.KMeans()
 
-    #a.printLabelsK()
     a.mixtureModel()
+    #a.printLabelsK(1)
 
     if int(sys.argv[2]) == 2: # we will be plotting
 
@@ -418,7 +424,7 @@ def main():
                     a0x.append(a.Phi[i][0])
                     a0y.append(a.Phi[i][1])
                     print(i)
-            plt.scatter(a0x,a0y)
+            plt.scatter(a0x,a0y,5)
 
         plt.show()
 
